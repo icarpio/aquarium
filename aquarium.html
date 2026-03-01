@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aquarium — El Acuario</title>
-<link rel="icon" href="../images/favicon.png" type="image/png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
@@ -104,6 +103,7 @@
     <div class="light-shafts" id="shafts"></div>
     <div class="caustics"></div>
     <div class="info-bar">
+      <span class="info-title">El Acuario</span>
       <span class="info-count" id="infoCount">cargando…</span>
     </div>
     <div class="seabed"><div class="seabed-detail"></div></div>
@@ -119,7 +119,7 @@
 <script src="../js/shared.js"></script>
 <script>
 renderNav();
-let rafIds=[];
+let rafIds=[], spawnTimers=[];
 
 function buildDecorations(scene) {
   const W=scene.clientWidth, H=scene.clientHeight;
@@ -145,7 +145,7 @@ function buildPlantSVG(w,h,[c1,c2,c3]) {
 function spawnFish(scene,fish) {
   const W=scene.clientWidth, H=scene.clientHeight;
   const FLOOR=110, CEIL=80;
-  const size=Math.max(40, Math.min(90, W/10));
+  const size = Math.max(40, Math.min(90, W/10));  // Responsive: smaller on mobile, larger on desktop
   let x=Math.random()*(W-size-20)+10;
   let y=CEIL+Math.random()*(H-FLOOR-CEIL-size);
   const baseSpeed=0.3+Math.random()*0.4;
@@ -184,6 +184,7 @@ function spawnFish(scene,fish) {
 async function loadAquarium() {
   const scene=document.getElementById('scene');
   rafIds.forEach(id=>cancelAnimationFrame(id)); rafIds=[];
+  spawnTimers.forEach(id=>clearTimeout(id)); spawnTimers=[];
   scene.querySelectorAll('.fish-entity,.plant,.bubble').forEach(e=>e.remove());
   document.getElementById('emptyState').style.display='none';
   document.getElementById('infoCount').textContent='cargando…';
@@ -194,14 +195,26 @@ async function loadAquarium() {
     document.getElementById('infoCount').textContent=fishes.length===0?'Sin peces aún':fishes.length===1?'1 pez nadando':`${fishes.length} peces nadando`;
     if(fishes.length===0){document.getElementById('emptyState').style.display='flex';return;}
     fishes.forEach((fish,idx)=>{
-      setTimeout(()=>{const tick=spawnFish(scene,fish);setTimeout(()=>{rafIds.push(requestAnimationFrame(tick));},idx*100);},idx*70);
+      const t1=setTimeout(()=>{
+        const tick=spawnFish(scene,fish);
+        const t2=setTimeout(()=>{ rafIds.push(requestAnimationFrame(tick)); },50);
+        spawnTimers.push(t2);
+      },idx*80);
+      spawnTimers.push(t1);
     });
   } catch(e){toast(apiErrorMsg(e),'error');}
   finally{setLoading(false);}
 }
 
-let resizeTimer;
-window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(loadAquarium,600);});
+let resizeTimer, lastW=window.innerWidth;
+window.addEventListener('resize',()=>{
+  // Only reload if WIDTH changed (ignore mobile browser chrome show/hide which only changes height)
+  const newW=window.innerWidth;
+  if(newW===lastW) return;
+  lastW=newW;
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(loadAquarium,600);
+});
 loadAquarium();
 </script>
 </body>

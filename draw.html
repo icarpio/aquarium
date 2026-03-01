@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Aquarium — Dibujar</title>
- <link rel="icon" href="../images/favicon.png" type="image/png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
@@ -684,9 +683,16 @@ async function saveFish() {
   const nameMob=document.getElementById('fishNameMob').value.trim();
   const name=nameDesk||nameMob||'Pez sin nombre';
 
-  // Export as PNG (preserves alpha channel / transparency)
-  // We never fill the canvas with a background color — only user strokes are saved.
-  const image_base64=canvas.toDataURL('image/png');
+  // Export at fixed 700×520 regardless of canvas display size (mobile vs desktop)
+  // This ensures fish are always the same size in the aquarium.
+  const EXPORT_W = 700, EXPORT_H = 520;
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width  = EXPORT_W;
+  exportCanvas.height = EXPORT_H;
+  const exportCtx = exportCanvas.getContext('2d');
+  // Draw canvas content scaled to fill export size, preserving transparency
+  exportCtx.drawImage(canvas, 0, 0, EXPORT_W, EXPORT_H);
+  const image_base64 = exportCanvas.toDataURL('image/png');
   setLoading(true);
   try {
     await api('/api/aquarium/fishes/create/','POST',{name,color,drawing_data:{width:canvas.width,height:canvas.height,saved_at:Date.now()},image_base64});
@@ -727,6 +733,9 @@ document.addEventListener('keydown',(e)=>{
           <strong>Haz clic o arrastra</strong> tu imagen aquí
         </div>
         <div class="drop-hint">PNG recomendado · Fondo transparente</div>
+        <div class="drop-hint" style="margin-top:0.25rem;color:rgba(77,127,160,0.6);">
+          Mínimo 300×300 px · Máximo 2 MB · Se redimensiona automáticamente a 800×800 px
+        </div>
       </div>
 
       <!-- Preview (shown after file selected) -->
@@ -735,6 +744,7 @@ document.addEventListener('keydown',(e)=>{
           <img id="previewImgEl" src="" alt="preview">
         </div>
         <span class="preview-name" id="previewFileName">archivo.png</span>
+        <span class="preview-name" id="previewDimensions" style="color:var(--dim);font-size:0.62rem;"></span>
         <button class="preview-change" onclick="resetUpload()">← Cambiar imagen</button>
       </div>
 
@@ -801,33 +811,91 @@ function onDrop(e) {
   else toast('Solo se aceptan imágenes', 'error');
 }
 
+const MAX_FILE_MB  = 2;        // reject files above this size
+const MAX_SIDE_PX  = 800;      // resize if wider or taller than this
+
 function onFileSelect(file) {
   if (!file) return;
+
+  // ── Validate file type ──────────────────────────────────────────
+  if (!file.type.startsWith('image/')) {
+    toast('Solo se aceptan imágenes (PNG, JPEG, WebP…)', 'error');
+    return;
+  }
+
+  // ── Validate file size (before resize) ─────────────────────────
+  const sizeMB = file.size / 1024 / 1024;
+  if (sizeMB > MAX_FILE_MB) {
+    toast(`La imagen pesa ${sizeMB.toFixed(1)} MB. Máximo permitido: ${MAX_FILE_MB} MB.`, 'error');
+    document.getElementById('fileInput').value = '';
+    return;
+  }
+
+  // ── Format warning (JPEG has no transparency) ──────────────────
   const isPng  = file.type === 'image/png';
   const isWebp = file.type === 'image/webp';
   document.getElementById('uploadWarning').classList.toggle('show', !isPng && !isWebp);
 
+  // ── Read → resize if needed → show preview ─────────────────────
   const reader = new FileReader();
   reader.onload = (ev) => {
-    uploadFileBase64 = ev.target.result; // full data-URL, backend strips prefix
+    const img = new Image();
+    img.onload = () => {
+      const needsResize = img.width > MAX_SIDE_PX || img.height > MAX_SIDE_PX;
 
-    // Show preview
-    document.getElementById('previewImgEl').src = ev.target.result;
-    document.getElementById('previewFileName').textContent = file.name;
-    document.getElementById('dropZone').style.display = 'none';
-    document.getElementById('uploadPreview').classList.add('show');
+      if (!needsResize) {
+        // Use original data as-is
+        setUploadReady(ev.target.result, file.name, img.width, img.height, false);
+        return;
+      }
 
-    // Enable save button
-    const btn = document.getElementById('uploadSaveBtn');
-    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+      // ── Resize keeping aspect ratio ───────────────────────────
+      const ratio  = Math.min(MAX_SIDE_PX / img.width, MAX_SIDE_PX / img.height);
+      const newW   = Math.round(img.width  * ratio);
+      const newH   = Math.round(img.height * ratio);
 
-    // Pre-fill name from filename (strip extension)
-    const nameInput = document.getElementById('uploadFishName');
-    if (!nameInput.value.trim()) {
-      nameInput.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-    }
+      const offscreen = document.createElement('canvas');
+      offscreen.width  = newW;
+      offscreen.height = newH;
+      const offCtx = offscreen.getContext('2d');
+
+      // Keep transparency for PNG/WebP
+      if (isPng || isWebp) {
+        offCtx.clearRect(0, 0, newW, newH);
+      }
+      offCtx.drawImage(img, 0, 0, newW, newH);
+
+      // Export as PNG to preserve transparency
+      const resizedDataUrl = offscreen.toDataURL('image/png');
+      setUploadReady(resizedDataUrl, file.name, newW, newH, true);
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function setUploadReady(dataUrl, fileName, w, h, wasResized) {
+  uploadFileBase64 = dataUrl;
+
+  // Update preview
+  document.getElementById('previewImgEl').src = dataUrl;
+  document.getElementById('previewFileName').textContent = fileName;
+  document.getElementById('previewDimensions').textContent =
+    `${w} × ${h} px` + (wasResized ? ' (redimensionada)' : '');
+  document.getElementById('dropZone').style.display = 'none';
+  document.getElementById('uploadPreview').classList.add('show');
+
+  // Enable save button
+  const btn = document.getElementById('uploadSaveBtn');
+  btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+
+  // Pre-fill name from filename (strip extension)
+  const nameInput = document.getElementById('uploadFishName');
+  if (!nameInput.value.trim()) {
+    nameInput.value = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  }
+
+  if (wasResized) toast('Imagen redimensionada a ' + w + '×' + h + 'px ✓', 'success');
 }
 
 function resetUpload() {
