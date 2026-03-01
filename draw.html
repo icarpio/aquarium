@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Aquarium — Dibujar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.draw-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── DESKTOP TOOLBAR ── */
+.draw-toolbar {
+  height: 52px;
+  background: rgba(7,17,29,0.97);
+  border-bottom: 1px solid rgba(56,189,248,0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0;
+}
+.draw-toolbar::-webkit-scrollbar { display: none; }
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.6rem;
+  border-right: 1px solid rgba(56,189,248,0.07);
+  flex-shrink: 0;
+}
+.toolbar-group:last-child { border-right: none; margin-left: auto; }
+
+.toolbar-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-right: 0.2rem;
+  white-space: nowrap;
+}
+
+.tool-btn {
+  width: 34px; height: 34px;
+  border-radius: var(--radius); border: 1px solid transparent;
+  background: none; color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; transition: all 0.2s; position: relative;
+  flex-shrink: 0;
+}
+.tool-btn:hover { background: rgba(56,189,248,0.08); color: var(--glow); border-color: rgba(56,189,248,0.2); }
+.tool-btn.active { background: rgba(56,189,248,0.12); color: var(--glow); border-color: rgba(56,189,248,0.35); box-shadow: 0 0 10px rgba(56,189,248,0.12); }
+.tool-btn[title]:hover::after {
+  content: attr(title); position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+  background: rgba(7,17,29,0.95); border: 1px solid rgba(56,189,248,0.15);
+  color: var(--white); font-size: 0.58rem; white-space: nowrap;
+  padding: 3px 8px; border-radius: 2px; z-index: 100; pointer-events: none;
+}
+
+.brush-dot {
+  border-radius: 50%; background: var(--muted); cursor: pointer;
+  transition: all 0.2s; border: 1px solid transparent; flex-shrink: 0;
+}
+.brush-dot:hover, .brush-dot.active {
+  background: var(--glow); border-color: rgba(56,189,248,0.4);
+  box-shadow: 0 0 8px rgba(56,189,248,0.4);
+}
+
+.swatch {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0;
+}
+.swatch:hover { transform: scale(1.2); }
+.swatch.active { border-color: white; box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+
+.color-pick-btn {
+  width: 28px; height: 28px; border-radius: var(--radius);
+  border: 1px solid rgba(56,189,248,0.2); cursor: pointer;
+  overflow: hidden; position: relative; flex-shrink: 0;
+}
+.color-pick-btn input[type=color] {
+  position: absolute; inset: -4px;
+  width: calc(100% + 8px); height: calc(100% + 8px);
+  border: none; cursor: pointer; opacity: 0;
+}
+.color-pick-btn .preview { width: 100%; height: 100%; pointer-events: none; }
+
+.slider-input {
+  -webkit-appearance: none; width: 75px; height: 3px;
+  background: rgba(56,189,248,0.12); border-radius: 2px; outline: none; cursor: pointer;
+}
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--glow); cursor: pointer; box-shadow: 0 0 8px rgba(56,189,248,0.5);
+}
+
+.fish-name-input {
+  background: rgba(7,17,29,0.9); border: 1px solid rgba(56,189,248,0.15);
+  color: var(--white); font-family: var(--font-mono); font-size: 0.75rem;
+  padding: 0.3rem 0.65rem; border-radius: var(--radius); outline: none;
+  width: 130px; transition: border-color 0.2s;
+}
+.fish-name-input:focus { border-color: rgba(56,189,248,0.4); }
+.fish-name-input::placeholder { color: var(--dim); }
+
+/* ── CANVAS WORKSPACE ── */
+.draw-workspace {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 1rem; overflow: hidden; position: relative;
+  background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(56,189,248,0.04) 0%, transparent 70%), var(--ink);
+}
+.canvas-container {
+  position: relative; border-radius: 4px; overflow: hidden;
+  /* Visual grid background so transparent canvas is visible */
+  background-color: #07111d;
+  background-image:
+    linear-gradient(45deg, #0a1929 25%, transparent 25%),
+    linear-gradient(-45deg, #0a1929 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #0a1929 75%),
+    linear-gradient(-45deg, transparent 75%, #0a1929 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  box-shadow: 0 0 0 1px rgba(56,189,248,0.15), 0 20px 60px rgba(0,0,0,0.6);
+  max-width: 100%; max-height: 100%;
+}
+#fishCanvas {
+  display: block; cursor: crosshair; touch-action: none;
+  max-width: 100%;
+  max-height: calc(100vh - var(--nav-h) - 52px - 40px - 2rem);
+}
+#previewCanvas {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; pointer-events: none; border-radius: 4px;
+}
+#fishCanvas.erase { cursor: cell; }
+#fishCanvas.eyedropper { cursor: crosshair; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  height: 28px; background: rgba(7,17,29,0.95);
+  border-top: 1px solid rgba(56,189,248,0.06);
+  display: flex; align-items: center; padding: 0 1rem;
+  gap: 1.5rem; flex-shrink: 0; overflow: hidden;
+}
+.status-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.6rem; letter-spacing: 0.1em; color: var(--dim); white-space: nowrap;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
+.status-item.active .status-dot { background: var(--teal); }
+
+/* ── MOBILE BOTTOM TOOLBAR ── */
+.mobile-toolbar {
+  display: none;
+  flex-direction: column;
+  background: rgba(7,17,29,0.97);
+  border-top: 1px solid rgba(56,189,248,0.1);
+  flex-shrink: 0;
+}
+
+/* Row 1: tools + undo/clear */
+.mob-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(56,189,248,0.06);
+  gap: 0.25rem;
+}
+.mob-tool-btn {
+  width: 44px; height: 44px; border-radius: var(--radius);
+  border: 1px solid transparent; background: none;
+  color: var(--muted); cursor: pointer; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.mob-tool-btn.active { background: rgba(56,189,248,0.12); color: var(--glow); border-color: rgba(56,189,248,0.35); }
+.mob-tool-btn:active { background: rgba(56,189,248,0.2); }
+
+/* Row 2: colors + size + opacity */
+.mob-colors {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0.4rem 0.75rem; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid rgba(56,189,248,0.06);
+}
+.mob-colors::-webkit-scrollbar { display: none; }
+.mob-swatch {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+}
+.mob-swatch.active { border-color: white; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+.mob-color-pick { width: 28px; height: 28px; flex-shrink: 0; position: relative; }
+.mob-color-pick input[type=color] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; border: none;
+}
+.mob-color-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid rgba(56,189,248,0.3); pointer-events: none;
+}
+
+/* Row 3: size + name + save */
+.mob-bottom {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+.mob-sizes {
+  display: flex; align-items: center; gap: 5px;
+}
+.mob-size-dot {
+  border-radius: 50%; background: var(--muted); cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0;
+}
+.mob-size-dot.active { background: var(--glow); border-color: rgba(56,189,248,0.5); }
+.mob-name-input {
+  flex: 1; background: rgba(4,15,30,0.8); border: 1px solid rgba(56,189,248,0.15);
+  color: var(--white); font-size: 1rem; padding: 0.45rem 0.75rem;
+  border-radius: var(--radius); outline: none; min-width: 0;
+  font-family: var(--font-mono);
+}
+.mob-name-input::placeholder { color: var(--dim); }
+.mob-save-btn {
+  padding: 0.45rem 0.9rem; background: rgba(45,212,191,0.12);
+  border: 1px solid rgba(45,212,191,0.35); color: var(--teal);
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+  border-radius: var(--radius); cursor: pointer; white-space: nowrap;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.mob-save-btn:active { background: rgba(45,212,191,0.25); }
+
+
+/* ── UPLOAD MODAL ── */
+.upload-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(2,8,18,0.85); backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.upload-overlay.open { display: flex; }
+
+.upload-modal {
+  width: 100%; max-width: 480px;
+  background: rgba(6,18,36,0.97);
+  border: 1px solid rgba(56,189,248,0.18);
+  border-radius: 6px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.7), 0 0 40px rgba(56,189,248,0.06);
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  overflow: hidden;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.92) translateY(16px);} to{opacity:1;transform:none;} }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid rgba(56,189,248,0.08);
+}
+.modal-title {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.1rem; color: var(--white);
+}
+.modal-close {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1.1rem; line-height:1; padding: 0.2rem; transition: color 0.2s;
+}
+.modal-close:hover { color: var(--danger); }
+
+.modal-body { padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed rgba(56,189,248,0.2);
+  border-radius: 4px; padding: 2rem 1rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.75rem; cursor: pointer; transition: all 0.25s;
+  position: relative; min-height: 180px;
+  background: rgba(56,189,248,0.02);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: rgba(56,189,248,0.5);
+  background: rgba(56,189,248,0.05);
+  box-shadow: inset 0 0 30px rgba(56,189,248,0.04);
+}
+.drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.drop-icon { font-size: 2.5rem; opacity: 0.4; transition: opacity 0.2s; }
+.drop-zone:hover .drop-icon, .drop-zone.drag-over .drop-icon { opacity: 0.7; }
+.drop-text { font-size: 0.78rem; color: var(--muted); text-align: center; line-height: 1.5; }
+.drop-text strong { color: var(--glow); }
+.drop-hint { font-size: 0.65rem; color: var(--dim); letter-spacing: 0.08em; }
+
+/* Preview */
+.upload-preview {
+  display: none; flex-direction: column; gap: 0.75rem; align-items: center;
+}
+.upload-preview.show { display: flex; }
+.preview-img-wrap {
+  width: 180px; height: 140px;
+  background: repeating-conic-gradient(rgba(56,189,248,0.05) 0% 25%, transparent 0% 50%) 0 0 / 14px 14px;
+  border: 1px solid rgba(56,189,248,0.15); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.preview-img-wrap img { max-width:100%; max-height:100%; object-fit:contain; }
+.preview-name { font-size: 0.7rem; color: var(--muted); font-family: var(--font-mono); }
+.preview-change {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+  text-decoration: underline; text-underline-offset: 2px; transition: color 0.2s;
+}
+.preview-change:hover { color: var(--glow); }
+
+/* Name input */
+.upload-name-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
+.upload-name-label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.upload-name-input {
+  background: rgba(4,15,30,0.8); border: 1px solid rgba(56,189,248,0.15);
+  color: var(--white); font-family: var(--font-mono); font-size: 0.9rem;
+  padding: 0.6rem 0.9rem; border-radius: var(--radius); outline: none; width: 100%;
+  transition: border-color 0.2s;
+}
+.upload-name-input:focus { border-color: rgba(56,189,248,0.45); }
+.upload-name-input::placeholder { color: var(--dim); }
+
+.modal-footer {
+  padding: 0 1.4rem 1.4rem;
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+}
+
+.upload-warning {
+  background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.2);
+  color: #fde68a; padding: 0.55rem 0.85rem; border-radius: var(--radius);
+  font-size: 0.75rem; line-height: 1.5; display: none;
+}
+.upload-warning.show { display: block; }
+
+@media (max-width: 480px) {
+  .upload-modal { max-width: 100%; }
+  .modal-body { padding: 1rem; }
+  .drop-zone { padding: 1.5rem 0.75rem; min-height: 140px; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .draw-toolbar { display: none; }
+  .status-bar   { display: none; }
+  .mobile-toolbar { display: flex; }
+
+  .draw-workspace { padding: 0.5rem; }
+
+  #fishCanvas {
+    max-height: calc(100vh - var(--nav-h) - 180px);
+  }
+}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div></div>
+<div id="toast"></div>
+<nav class="nav" id="nav"></nav>
+
+<div class="draw-page" style="padding-top:var(--nav-h);">
+
+  <!-- ── DESKTOP TOOLBAR ── -->
+  <div class="draw-toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">Herr.</span>
+      <button class="tool-btn active" id="toolPen"    onclick="setTool('pen')"        title="Pincel (P)">✏</button>
+      <button class="tool-btn"        id="toolEraser" onclick="setTool('eraser')"     title="Borrador (E)">◻</button>
+      <button class="tool-btn"        id="toolFill"   onclick="setTool('fill')"       title="Relleno (F)">⬛</button>
+      <button class="tool-btn"        id="toolLine"   onclick="setTool('line')"       title="Línea (L)">╱</button>
+      <button class="tool-btn"        id="toolEye"    onclick="setTool('eyedropper')" title="Cuentagotas (I)">💧</button>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Tamaño</span>
+      <div style="display:flex;align-items:center;gap:5px;" id="brushSizes"></div>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Opac.</span>
+      <input type="range" class="slider-input" id="opacitySlider" min="5" max="100" value="100"
+        oninput="opacity=this.value/100;document.getElementById('opacityVal').textContent=this.value+'%'">
+      <span style="font-size:0.62rem;color:var(--muted);min-width:28px;" id="opacityVal">100%</span>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Color</span>
+      <div style="display:flex;gap:4px;" id="quickColors"></div>
+      <div class="color-pick-btn" title="Color personalizado">
+        <div class="preview" id="colorPreview" style="background:#38bdf8;"></div>
+        <input type="color" id="colorPicker" value="#38bdf8" oninput="applyCustomColor(this.value)">
+      </div>
+      <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);margin-left:4px;" id="hexDisplay">#38bdf8</span>
+    </div>
+    <div class="toolbar-group">
+      <button class="tool-btn" onclick="undo()"        title="Deshacer (Ctrl+Z)">↩</button>
+      <button class="tool-btn" onclick="redo()"        title="Rehacer (Ctrl+Y)">↪</button>
+      <button class="tool-btn" onclick="clearCanvas()" title="Limpiar todo">✕</button>
+      <button class="tool-btn" onclick="openUpload()"  title="Subir imagen PNG">📂</button>
+    </div>
+    <div class="toolbar-group">
+      <input class="fish-name-input" type="text" id="fishName" placeholder="Nombre del pez...">
+      <button class="btn btn-teal" style="height:34px;padding:0 0.9rem;font-size:0.62rem;" onclick="saveFish()">
+        ⬆ Guardar
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CANVAS ── -->
+  <div class="draw-workspace" id="workspace">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="fishCanvas" width="700" height="520"></canvas>
+      <canvas id="previewCanvas" width="700" height="520"></canvas>
+    </div>
+  </div>
+
+  <!-- ── DESKTOP STATUS BAR ── -->
+  <div class="status-bar">
+    <div class="status-item active">
+      <div class="status-dot"></div>
+      <span id="statusTool">Pincel</span>
+    </div>
+    <div class="status-item">
+      <span>Tamaño:</span><span id="statusSize">6px</span>
+    </div>
+    <div class="status-item">
+      <span>Pos:</span><span id="statusPos">—</span>
+    </div>
+    <div class="status-item" style="margin-left:auto;">
+      <span>P·E·F·L·I · Ctrl+Z/Y</span>
+    </div>
+  </div>
+
+  <!-- ── MOBILE TOOLBAR ── -->
+  <div class="mobile-toolbar">
+
+    <!-- Row 1: Tools -->
+    <div class="mob-tools">
+      <button class="mob-tool-btn active" id="mToolPen"    onclick="setTool('pen')"        title="Pincel">✏</button>
+      <button class="mob-tool-btn"        id="mToolEraser" onclick="setTool('eraser')"     title="Borrador">◻</button>
+      <button class="mob-tool-btn"        id="mToolFill"   onclick="setTool('fill')"       title="Relleno">⬛</button>
+      <button class="mob-tool-btn"        id="mToolLine"   onclick="setTool('line')"       title="Línea">╱</button>
+      <button class="mob-tool-btn"        id="mToolEye"    onclick="setTool('eyedropper')" title="Cuentagotas">💧</button>
+      <div style="width:1px;height:28px;background:rgba(56,189,248,0.1);flex-shrink:0;"></div>
+      <button class="mob-tool-btn" onclick="undo()">↩</button>
+      <button class="mob-tool-btn" onclick="redo()">↪</button>
+      <button class="mob-tool-btn" onclick="clearCanvas()">✕</button>
+      <button class="mob-tool-btn" onclick="openUpload()" title="Subir PNG">📂</button>
+    </div>
+
+    <!-- Row 2: Colors -->
+    <div class="mob-colors" id="mobColors">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Row 3: Size + Name + Save -->
+    <div class="mob-bottom">
+      <div class="mob-sizes" id="mobSizes">
+        <!-- populated by JS -->
+      </div>
+      <input class="mob-name-input" type="text" id="fishNameMob" placeholder="Nombre del pez...">
+      <button class="mob-save-btn" onclick="saveFish()">⬆ Guardar</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+renderNav();
+
+const QUICK_COLORS  = ['#38bdf8','#2dd4bf','#a78bfa','#fb7185','#fbbf24','#4ade80','#f97316','#ffffff','#94a3b8','#1e293b'];
+const BRUSH_SIZES   = [{s:2,d:8},{s:4,d:11},{s:6,d:14},{s:10,d:18},{s:16,d:22},{s:26,d:28}];
+const MOB_BRUSHES   = [2,4,8,14,22];
+
+let drawing=false, tool='pen', brushSize=6, color='#38bdf8', opacity=1;
+let histStack=[], redoStack=[], lineStart=null, ctx, pvCtx;
+
+window.addEventListener('load', () => {
+  initCanvas(); initBrushSizes(); initQuickColors(); initMobile();
+});
+
+function initCanvas() {
+  const canvas = document.getElementById('fishCanvas');
+  const pv     = document.getElementById('previewCanvas');
+  ctx   = canvas.getContext('2d');
+  pvCtx = pv.getContext('2d');
+  // Canvas starts transparent — background shown via CSS only
+  saveHistory();
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  canvas.addEventListener('pointerup',   onUp);
+  canvas.addEventListener('pointerleave',onUp);
+  canvas.addEventListener('pointermove', updateStatusPos);
+}
+
+function initBrushSizes() {
+  const c = document.getElementById('brushSizes');
+  BRUSH_SIZES.forEach(({s,d}) => {
+    const dot = document.createElement('div');
+    dot.className = 'brush-dot' + (s===6?' active':'');
+    dot.style.cssText = `width:${d}px;height:${d}px;`;
+    dot.title = s+'px';
+    dot.onclick = () => { brushSize=s; document.querySelectorAll('.brush-dot').forEach(b=>b.classList.remove('active')); dot.classList.add('active'); document.getElementById('statusSize').textContent=s+'px'; };
+    c.appendChild(dot);
+  });
+}
+
+function initQuickColors() {
+  const c = document.getElementById('quickColors');
+  QUICK_COLORS.forEach((col,i) => {
+    const sw = document.createElement('div');
+    sw.className='swatch'+(i===0?' active':'');
+    sw.style.background=col; sw.title=col;
+    sw.onclick=()=>setColor(col,sw);
+    c.appendChild(sw);
+  });
+}
+
+function initMobile() {
+  // Colors row
+  const mc = document.getElementById('mobColors');
+  QUICK_COLORS.forEach((col,i) => {
+    const sw = document.createElement('div');
+    sw.className='mob-swatch'+(i===0?' active':'');
+    sw.style.background=col;
+    sw.onclick=()=>{ setColor(col); document.querySelectorAll('.mob-swatch').forEach(s=>s.classList.remove('active')); sw.classList.add('active'); };
+    mc.appendChild(sw);
+  });
+  // Custom color
+  const cp = document.createElement('div');
+  cp.className='mob-color-pick';
+  cp.innerHTML=`<div class="mob-color-dot" id="mobColorDot" style="background:#38bdf8;"></div><input type="color" value="#38bdf8" oninput="applyCustomColor(this.value);document.getElementById('mobColorDot').style.background=this.value;document.querySelectorAll('.mob-swatch').forEach(s=>s.classList.remove('active'));">`;
+  mc.appendChild(cp);
+
+  // Sizes row
+  const ms = document.getElementById('mobSizes');
+  MOB_BRUSHES.forEach(s => {
+    const d = document.createElement('div');
+    d.className='mob-size-dot'+(s===6?' active':'');
+    const dim = 8+s;
+    d.style.cssText=`width:${dim}px;height:${dim}px;`;
+    d.onclick=()=>{ brushSize=s; document.querySelectorAll('.mob-size-dot').forEach(b=>b.classList.remove('active')); d.classList.add('active'); };
+    ms.appendChild(d);
+  });
+}
+
+function setColor(c) {
+  color=c;
+  document.getElementById('colorPreview').style.background=c;
+  document.getElementById('hexDisplay').textContent=c;
+  document.getElementById('colorPicker').value=c;
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  if(tool==='eraser') setTool('pen');
+}
+function applyCustomColor(c) {
+  setColor(c);
+  document.querySelectorAll('.swatch,.mob-swatch').forEach(s=>s.classList.remove('active'));
+}
+
+function setTool(t) {
+  tool=t;
+  // Desktop
+  document.querySelectorAll('.tool-btn[id^=tool]').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('tool'+t.charAt(0).toUpperCase()+t.slice(1));
+  if(btn) btn.classList.add('active');
+  // Mobile
+  document.querySelectorAll('.mob-tool-btn').forEach(b=>b.classList.remove('active'));
+  const mbtn=document.getElementById('mTool'+t.charAt(0).toUpperCase()+t.slice(1));
+  if(mbtn) mbtn.classList.add('active');
+
+  const canvas=document.getElementById('fishCanvas');
+  canvas.className=t==='eraser'?'erase':t==='eyedropper'?'eyedropper':'';
+  const names={pen:'Pincel',eraser:'Borrador',fill:'Relleno',line:'Línea',eyedropper:'Cuentagotas'};
+  const st=document.getElementById('statusTool');
+  if(st) st.textContent=names[t]||t;
+}
+
+function getXY(e) {
+  const canvas=document.getElementById('fishCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  return { x:(clientX-rect.left)*(canvas.width/rect.width), y:(clientY-rect.top)*(canvas.height/rect.height) };
+}
+
+function onDown(e) {
+  e.preventDefault();
+  const p=getXY(e); drawing=true;
+  if(tool==='fill')       { doFill(Math.round(p.x),Math.round(p.y)); saveHistory(); drawing=false; return; }
+  if(tool==='eyedropper') { pickColor(Math.round(p.x),Math.round(p.y)); drawing=false; return; }
+  if(tool==='line')       { lineStart=p; return; }
+  applyCtxStyle();
+  ctx.beginPath(); ctx.arc(p.x,p.y,brushSize/2,0,Math.PI*2); ctx.fill();
+}
+function onMove(e) {
+  if(!drawing) return;
+  const p=getXY(e);
+  if(tool==='line') {
+    pvCtx.clearRect(0,0,700,520);
+    pvCtx.globalAlpha=opacity; pvCtx.strokeStyle=color; pvCtx.lineWidth=brushSize; pvCtx.lineCap='round';
+    pvCtx.beginPath(); pvCtx.moveTo(lineStart.x,lineStart.y); pvCtx.lineTo(p.x,p.y); pvCtx.stroke();
+    return;
+  }
+  applyCtxStyle();
+  if(tool==='eraser') { ctx.globalCompositeOperation='destination-out'; ctx.globalAlpha=0.4; }
+  ctx.beginPath(); ctx.arc(p.x,p.y,brushSize/2,0,Math.PI*2); ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+}
+function onUp(e) {
+  if(!drawing) return; drawing=false;
+  if(tool==='line'&&lineStart) {
+    const p=getXY(e);
+    pvCtx.clearRect(0,0,700,520);
+    applyCtxStyle();
+    ctx.beginPath(); ctx.moveTo(lineStart.x,lineStart.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+    lineStart=null;
+  }
+  ctx.globalCompositeOperation='source-over';
+  saveHistory();
+}
+function updateStatusPos(e) {
+  const p=getXY(e);
+  const el=document.getElementById('statusPos');
+  if(el) el.textContent=`${Math.round(p.x)}, ${Math.round(p.y)}`;
+}
+function applyCtxStyle() {
+  ctx.globalAlpha=opacity; ctx.strokeStyle=color; ctx.fillStyle=color;
+  ctx.lineWidth=brushSize; ctx.lineCap='round'; ctx.lineJoin='round';
+}
+function pickColor(x,y) {
+  const px=ctx.getImageData(x,y,1,1).data;
+  const hex='#'+[px[0],px[1],px[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+  setColor(hex); setTool('pen'); toast(`Color: ${hex}`,'success');
+}
+function doFill(sx,sy) {
+  const canvas=document.getElementById('fishCanvas');
+  const idata=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const d=idata.data, w=canvas.width, h=canvas.height;
+  const idx=(sy*w+sx)*4;
+  const tr=d[idx],tg=d[idx+1],tb=d[idx+2],ta=d[idx+3];
+  const fr=parseInt(color.slice(1,3),16),fg=parseInt(color.slice(3,5),16),fb=parseInt(color.slice(5,7),16);
+  const fa=Math.round(opacity*255);
+  if(tr===fr&&tg===fg&&tb===fb&&ta===fa) return;
+  const match=(i)=>Math.abs(d[i]-tr)<32&&Math.abs(d[i+1]-tg)<32&&Math.abs(d[i+2]-tb)<32&&Math.abs(d[i+3]-ta)<32;
+  const stack=[[sx,sy]], vis=new Uint8Array(w*h);
+  while(stack.length){const[x,y]=stack.pop();if(x<0||x>=w||y<0||y>=h)continue;const i=(y*w+x)*4;if(vis[y*w+x]||!match(i))continue;vis[y*w+x]=1;d[i]=fr;d[i+1]=fg;d[i+2]=fb;d[i+3]=fa;stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);}
+  ctx.putImageData(idata,0,0);
+}
+function saveHistory() {
+  const canvas=document.getElementById('fishCanvas');
+  if(histStack.length>40) histStack.shift();
+  histStack.push(canvas.toDataURL()); redoStack=[];
+}
+function undo() {
+  if(histStack.length<=1) return;
+  redoStack.push(histStack.pop()); restoreState(histStack[histStack.length-1]);
+}
+function redo() {
+  if(!redoStack.length) return;
+  const s=redoStack.pop(); histStack.push(s); restoreState(s);
+}
+function restoreState(url) {
+  const img=new Image(); img.src=url;
+  img.onload=()=>{ ctx.globalAlpha=1; ctx.clearRect(0,0,700,520); ctx.drawImage(img,0,0); };
+}
+function clearCanvas() {
+  if(!confirm('¿Limpiar el canvas?')) return;
+  ctx.globalAlpha=1; ctx.clearRect(0,0,700,520);
+  histStack=[]; redoStack=[]; saveHistory();
+}
+async function saveFish() {
+  const canvas=document.getElementById('fishCanvas');
+  // read name from whichever input is visible
+  const nameDesk=document.getElementById('fishName').value.trim();
+  const nameMob=document.getElementById('fishNameMob').value.trim();
+  const name=nameDesk||nameMob||'Pez sin nombre';
+
+  // Export as PNG (preserves alpha channel / transparency)
+  // We never fill the canvas with a background color — only user strokes are saved.
+  const image_base64=canvas.toDataURL('image/png');
+  setLoading(true);
+  try {
+    await api('/api/aquarium/fishes/create/','POST',{name,color,drawing_data:{width:canvas.width,height:canvas.height,saved_at:Date.now()},image_base64});
+    toast('🐟 ¡Pez guardado!','success');
+    clearCanvas();
+    document.getElementById('fishName').value='';
+    document.getElementById('fishNameMob').value='';
+  } catch(e) { toast(apiErrorMsg(e),'error'); }
+  finally { setLoading(false); }
+}
+document.addEventListener('keydown',(e)=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='y'){e.preventDefault();redo();}
+  if(e.target.tagName==='INPUT') return;
+  const map={p:'pen',e:'eraser',f:'fill',l:'line',i:'eyedropper'};
+  if(map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
+});
+</script>
+
+<!-- ── UPLOAD IMAGE MODAL ── -->
+<div class="upload-overlay" id="uploadOverlay" onclick="handleOverlayClick(event)">
+  <div class="upload-modal">
+
+    <div class="modal-header">
+      <span class="modal-title">Subir imagen</span>
+      <button class="modal-close" onclick="closeUpload()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Drop zone (shown when no file selected) -->
+      <div class="drop-zone" id="dropZone"
+        ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="fileInput" accept="image/png,image/webp,image/gif,image/jpeg"
+          onchange="onFileSelect(this.files[0])">
+        <div class="drop-icon">🐠</div>
+        <div class="drop-text">
+          <strong>Haz clic o arrastra</strong> tu imagen aquí
+        </div>
+        <div class="drop-hint">PNG recomendado · Fondo transparente</div>
+      </div>
+
+      <!-- Preview (shown after file selected) -->
+      <div class="upload-preview" id="uploadPreview">
+        <div class="preview-img-wrap">
+          <img id="previewImgEl" src="" alt="preview">
+        </div>
+        <span class="preview-name" id="previewFileName">archivo.png</span>
+        <button class="preview-change" onclick="resetUpload()">← Cambiar imagen</button>
+      </div>
+
+      <!-- Warning for non-PNG -->
+      <div class="upload-warning" id="uploadWarning">
+        ⚠ Las imágenes JPEG/JPG no tienen transparencia. El fondo del pez
+        puede verse con un cuadro blanco en el acuario. Usa PNG para mejores resultados.
+      </div>
+
+      <!-- Fish name -->
+      <div class="upload-name-wrap">
+        <label class="upload-name-label">Nombre del pez</label>
+        <input class="upload-name-input" type="text" id="uploadFishName"
+          placeholder="Dale un nombre a tu pez...">
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="closeUpload()">Cancelar</button>
+      <button class="btn btn-teal" id="uploadSaveBtn" onclick="saveUploadedFish()" disabled
+        style="opacity:0.4;cursor:not-allowed;">
+        ⬆ Guardar pez
+      </button>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
+<script>
+// ══════════════════════════════════════════
+//  UPLOAD IMAGE MODAL
+// ══════════════════════════════════════════
+let uploadFileBase64 = null;
+
+function openUpload() {
+  document.getElementById('uploadOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  resetUpload();
+}
+function closeUpload() {
+  document.getElementById('uploadOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('uploadOverlay')) closeUpload();
+}
+
+// Drag & drop
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+function onDragLeave() {
+  document.getElementById('dropZone').classList.remove('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) onFileSelect(file);
+  else toast('Solo se aceptan imágenes', 'error');
+}
+
+function onFileSelect(file) {
+  if (!file) return;
+  const isPng  = file.type === 'image/png';
+  const isWebp = file.type === 'image/webp';
+  document.getElementById('uploadWarning').classList.toggle('show', !isPng && !isWebp);
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    uploadFileBase64 = ev.target.result; // full data-URL, backend strips prefix
+
+    // Show preview
+    document.getElementById('previewImgEl').src = ev.target.result;
+    document.getElementById('previewFileName').textContent = file.name;
+    document.getElementById('dropZone').style.display = 'none';
+    document.getElementById('uploadPreview').classList.add('show');
+
+    // Enable save button
+    const btn = document.getElementById('uploadSaveBtn');
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+
+    // Pre-fill name from filename (strip extension)
+    const nameInput = document.getElementById('uploadFishName');
+    if (!nameInput.value.trim()) {
+      nameInput.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetUpload() {
+  uploadFileBase64 = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewImgEl').src = '';
+  document.getElementById('previewFileName').textContent = '';
+  document.getElementById('dropZone').style.display = '';
+  document.getElementById('uploadPreview').classList.remove('show');
+  document.getElementById('uploadWarning').classList.remove('show');
+  document.getElementById('uploadFishName').value = '';
+  const btn = document.getElementById('uploadSaveBtn');
+  btn.disabled = true; btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed';
+}
+
+async function saveUploadedFish() {
+  if (!uploadFileBase64) return;
+  const name = document.getElementById('uploadFishName').value.trim() || 'Pez sin nombre';
+  setLoading(true);
+  try {
+    await api('/api/aquarium/fishes/create/', 'POST', {
+      name,
+      color: '#38bdf8',
+      drawing_data: { source: 'upload', saved_at: Date.now() },
+      image_base64: uploadFileBase64,
+    });
+    toast('🐟 ¡Pez guardado en el océano!', 'success');
+    closeUpload();
+  } catch(e) {
+    toast(apiErrorMsg(e), 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// Close with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeUpload();
+});
+</script>

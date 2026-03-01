@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aquarium — El Acuario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.aquarium-page { height:100vh; display:flex; flex-direction:column; overflow:hidden; padding-top:var(--nav-h); }
+
+.scene {
+  flex:1; position:relative; overflow:hidden;
+  background:linear-gradient(to bottom,#030d1a 0%,#061828 25%,#082236 55%,#0a2d47 80%,#0c3355 100%);
+}
+
+.light-shafts { position:absolute; top:0;left:0;right:0; height:55%; pointer-events:none; overflow:hidden; mix-blend-mode:screen; }
+.shaft {
+  position:absolute; top:-20px; background:linear-gradient(to bottom,rgba(56,189,248,0.08) 0%,rgba(56,189,248,0.03) 40%,transparent 100%);
+  border-radius:0 0 50% 50%; transform-origin:top center;
+  animation:shaft-sway ease-in-out infinite;
+}
+@keyframes shaft-sway {
+  0%,100%{transform:rotate(var(--a)) skewX(-2deg);opacity:var(--op);}
+  50%{transform:rotate(calc(var(--a)+6deg)) skewX(2deg);opacity:calc(var(--op)*0.6);}
+}
+
+.seabed { position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(to top,rgba(3,14,31,1) 0%,rgba(6,24,50,0.8) 60%,transparent 100%);z-index:5; }
+.seabed-detail { position:absolute;bottom:0;left:0;right:0;height:25px;background:repeating-linear-gradient(90deg,rgba(14,48,82,0.4) 0px,rgba(8,30,55,0.6) 20px,rgba(14,48,82,0.4) 40px); }
+
+.plant { position:absolute;bottom:22px;transform-origin:bottom center;animation:plant-sway ease-in-out infinite;z-index:4; }
+@keyframes plant-sway { 0%,100%{transform:rotate(var(--lean));}50%{transform:rotate(calc(var(--lean)*-1.5));} }
+
+.caustics { position:absolute;inset:0;pointer-events:none;opacity:0.04;
+  background-image:radial-gradient(ellipse 40px 20px at 20% 30%,rgba(56,189,248,1),transparent),radial-gradient(ellipse 30px 15px at 60% 20%,rgba(56,189,248,1),transparent),radial-gradient(ellipse 50px 25px at 80% 40%,rgba(56,189,248,1),transparent);
+  animation:caustic-drift 8s ease-in-out infinite alternate;
+}
+@keyframes caustic-drift { 0%{transform:scale(1) translate(0,0);} 100%{transform:scale(1.1) translate(2%,1%);} }
+
+.bubble {
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,0.25),rgba(56,189,248,0.05));
+  border:1px solid rgba(255,255,255,0.12);animation:bubble-rise linear infinite;z-index:6;pointer-events:none;
+}
+@keyframes bubble-rise {
+  0%{transform:translateY(0) translateX(0);opacity:0.6;}
+  30%{transform:translateY(-30%) translateX(var(--w1));}
+  60%{transform:translateY(-60%) translateX(var(--w2));}
+  100%{transform:translateY(-110vh) translateX(0);opacity:0;}
+}
+
+.fish-entity { position:absolute;z-index:10;cursor:pointer;transition:filter 0.3s; }
+.fish-entity:hover { filter:drop-shadow(0 0 12px rgba(56,189,248,0.8));z-index:20; }
+.fish-entity img { width:100%;height:100%;object-fit:contain;display:block; }
+.fish-entity.flipped img { transform:scaleX(-1); }
+
+.fish-tip {
+  position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);
+  background:rgba(7,17,29,0.92);border:1px solid rgba(56,189,248,0.2);
+  padding:4px 10px;border-radius:3px;font-size:0.62rem;letter-spacing:0.1em;
+  color:var(--white);white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity 0.25s;backdrop-filter:blur(10px);z-index:30;
+}
+.fish-tip strong { color:var(--glow); }
+.fish-entity:hover .fish-tip { opacity:1; }
+
+.info-bar {
+  position:absolute;top:0;left:0;right:0;padding:0.75rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(to bottom,rgba(3,13,26,0.7),transparent);z-index:50;pointer-events:none;
+}
+.info-title { font-family:var(--font-serif);font-style:italic;font-size:1rem;color:var(--white);opacity:0.7; }
+.info-count { font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(56,189,248,0.5); }
+
+.empty-scene {
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1rem;z-index:30;padding:1rem;text-align:center;
+}
+.empty-icon { font-size:3.5rem;opacity:0.2;filter:grayscale(1); }
+.empty-text { font-family:var(--font-serif);font-style:italic;font-size:1rem;color:var(--muted); }
+
+.refresh-btn {
+  position:absolute;bottom:1.25rem;right:1.25rem;z-index:50;pointer-events:all;
+  padding:0.4rem 0.9rem;font-size:0.65rem;
+}
+
+@media (max-width:768px) {
+  .info-title { font-size:0.85rem; }
+  .info-count { font-size:0.58rem;letter-spacing:0.1em; }
+  .refresh-btn { bottom:0.75rem;right:0.75rem; }
+  .fish-tip { display:none; } /* avoid tap-hover issues on touch */
+}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div></div>
+<div id="toast"></div>
+<nav class="nav" id="nav"></nav>
+
+<div class="aquarium-page">
+  <div class="scene" id="scene">
+    <div class="light-shafts" id="shafts"></div>
+    <div class="caustics"></div>
+    <div class="info-bar">
+      <span class="info-title">El Acuario</span>
+      <span class="info-count" id="infoCount">cargando…</span>
+    </div>
+    <div class="seabed"><div class="seabed-detail"></div></div>
+    <div class="empty-scene" id="emptyState" style="display:none;">
+      <div class="empty-icon">🐠</div>
+      <p class="empty-text">El océano está vacío</p>
+      <a href="draw.html" class="btn btn-primary" style="pointer-events:all;margin-top:0.5rem;">Dibujar mi pez →</a>
+    </div>
+    <button class="btn refresh-btn" onclick="loadAquarium()">↺</button>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+renderNav();
+let rafIds=[];
+
+function buildDecorations(scene) {
+  const W=scene.clientWidth, H=scene.clientHeight;
+  // Shafts
+  const shafts=document.getElementById('shafts'); shafts.innerHTML='';
+  for(let i=0;i<9;i++){const el=document.createElement('div');el.className='shaft';const angle=-25+i*7;el.style.cssText=`left:${5+i*10}%;--a:${angle}deg;--op:${0.5+Math.random()*0.5};animation-duration:${5+Math.random()*5}s;animation-delay:-${Math.random()*8}s;width:${50+Math.random()*60}px;height:70vh;`;shafts.appendChild(el);}
+  // Plants
+  const PLANT_COLORS=[['#0d4f2e','#13703f','#0a3d24'],['#1a3a8c','#2456c8','#0f2666'],['#7c2d8a','#a33db5','#5a1f65'],['#8a2b1a','#c43d28','#661f11']];
+  const count=Math.min(20,Math.floor(W/40));
+  for(let i=0;i<count;i++){const plant=document.createElement('div');plant.className='plant';const colors=PLANT_COLORS[Math.floor(Math.random()*PLANT_COLORS.length)];const h=30+Math.random()*65,w=7+Math.random()*7,lean=(Math.random()-0.5)*8;plant.style.cssText=`left:${(i/count)*97+Math.random()*2}%;height:${h}px;width:${w}px;--lean:${lean}deg;animation-duration:${2+Math.random()*2.5}s;animation-delay:-${Math.random()*4}s;opacity:${0.5+Math.random()*0.45};`;plant.innerHTML=buildPlantSVG(w,h,colors);scene.appendChild(plant);}
+  // Bubbles
+  const bcount=Math.max(8,Math.floor(W/60));
+  for(let i=0;i<bcount;i++){const b=document.createElement('div');b.className='bubble';const sz=3+Math.random()*8;b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;bottom:${20+Math.random()*20}%;animation-duration:${7+Math.random()*10}s;animation-delay:-${Math.random()*15}s;--w1:${(Math.random()-0.5)*30}px;--w2:${(Math.random()-0.5)*50}px;`;scene.appendChild(b);}
+}
+
+function buildPlantSVG(w,h,[c1,c2,c3]) {
+  const t=Math.random();
+  if(t<0.4) return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="M${w/2},${h} Q${w},${h*0.7} ${w/2},${h*0.5} Q0,${h*0.3} ${w/2},0" fill="none" stroke="${c2}" stroke-width="${w*0.5}" stroke-linecap="round" opacity="0.9"/></svg>`;
+  if(t<0.7) return `<svg width="${w*2}" height="${h}" viewBox="0 0 ${w*2} ${h}"><line x1="${w}" y1="${h}" x2="${w}" y2="${h*0.5}" stroke="${c1}" stroke-width="3" stroke-linecap="round"/><line x1="${w}" y1="${h*0.5}" x2="${w*0.4}" y2="${h*0.15}" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/><line x1="${w}" y1="${h*0.5}" x2="${w*1.6}" y2="${h*0.2}" stroke="${c2}" stroke-width="2.5" stroke-linecap="round"/><circle cx="${w*0.4}" cy="${h*0.15}" r="3" fill="${c2}"/><circle cx="${w*1.6}" cy="${h*0.2}" r="3" fill="${c2}"/><circle cx="${w}" cy="${h*0.1}" r="4" fill="${c1}"/></svg>`;
+  return `<svg width="${w*2}" height="${h}" viewBox="0 0 ${w*2} ${h}"><ellipse cx="${w}" cy="${h*0.4}" rx="${w*0.8}" ry="${h*0.45}" fill="${c1}" opacity="0.85"/><ellipse cx="${w*0.5}" cy="${h*0.5}" rx="${w*0.6}" ry="${h*0.35}" fill="${c2}" opacity="0.75"/><line x1="${w}" y1="${h}" x2="${w}" y2="${h*0.6}" stroke="${c1}" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+
+function spawnFish(scene,fish) {
+  const W=scene.clientWidth, H=scene.clientHeight;
+  const FLOOR=110, CEIL=80;
+  const size=Math.max(40, Math.min(90, W/10));
+  let x=Math.random()*(W-size-20)+10;
+  let y=CEIL+Math.random()*(H-FLOOR-CEIL-size);
+  const baseSpeed=0.3+Math.random()*0.4;
+  let vx=baseSpeed*(Math.random()<0.5?1:-1), vy=(Math.random()-0.5)*0.2, flipped=vx<0;
+
+  const el=document.createElement('div');
+  el.className='fish-entity'+(flipped?' flipped':'');
+  el.style.cssText=`width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+
+  const tip=document.createElement('div'); tip.className='fish-tip';
+  tip.innerHTML=`<strong>${fish.name||'Pez'}</strong> · ${fish.username}`;
+  el.appendChild(tip);
+
+  const img=document.createElement('img');
+  img.src=fish.image_url; img.alt=fish.name||'pez'; img.draggable=false; img.loading='lazy';
+  el.appendChild(img); scene.appendChild(el);
+
+  function tick() {
+    const sw=scene.clientWidth, sh=scene.clientHeight;
+    x+=vx; y+=vy;
+    vy+=(Math.random()-0.5)*0.015; vx+=(Math.random()-0.5)*0.008;
+    const spd=Math.sqrt(vx*vx+vy*vy);
+    if(spd>0.85){vx*=0.97;vy*=0.97;} if(spd<0.18){vx*=1.05;vy*=1.05;}
+    if(x<10){x=10;vx=Math.abs(vx);}
+    if(x>sw-size-10){x=sw-size-10;vx=-Math.abs(vx);}
+    if(y<CEIL){y=CEIL;vy=Math.abs(vy)*0.5;}
+    if(y>sh-FLOOR-size){y=sh-FLOOR-size;vy=-Math.abs(vy)*0.5;}
+    if(vx>0.05&&flipped){flipped=false;el.classList.remove('flipped');}
+    if(vx<-0.05&&!flipped){flipped=true;el.classList.add('flipped');}
+    el.style.left=x+'px'; el.style.top=y+'px';
+    rafIds.push(requestAnimationFrame(tick));
+  }
+  return tick;
+}
+
+async function loadAquarium() {
+  const scene=document.getElementById('scene');
+  rafIds.forEach(id=>cancelAnimationFrame(id)); rafIds=[];
+  scene.querySelectorAll('.fish-entity,.plant,.bubble').forEach(e=>e.remove());
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('infoCount').textContent='cargando…';
+  buildDecorations(scene);
+  setLoading(true);
+  try {
+    const fishes=await api(`/api/aquarium/aquarium/?source=${SOURCE}`,'GET',null,false);
+    document.getElementById('infoCount').textContent=fishes.length===0?'Sin peces aún':fishes.length===1?'1 pez nadando':`${fishes.length} peces nadando`;
+    if(fishes.length===0){document.getElementById('emptyState').style.display='flex';return;}
+    fishes.forEach((fish,idx)=>{
+      setTimeout(()=>{const tick=spawnFish(scene,fish);setTimeout(()=>{rafIds.push(requestAnimationFrame(tick));},idx*100);},idx*70);
+    });
+  } catch(e){toast(apiErrorMsg(e),'error');}
+  finally{setLoading(false);}
+}
+
+let resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(loadAquarium,600);});
+loadAquarium();
+</script>
+</body>
+</html>
