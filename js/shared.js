@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://marianoapi.onrender.com';
 const SOURCE   = 'aquarium';
 
 function getToken() { return localStorage.getItem('aq_token'); }
