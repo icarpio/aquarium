@@ -69,12 +69,19 @@
     animation: swim-idle 4s ease-in-out infinite;
     filter: drop-shadow(0 0 20px rgba(0,212,255,0.35));
   }
-  .fish-icon img { width: 320px; height: auto; object-fit: contain; display: inline-block; }
+  .fish-icon img { width: 160px; height: auto; object-fit: contain; display: inline-block; }
   @keyframes swim-idle {
     0%,100% { transform: translateX(0) rotate(-2deg); }
     50%      { transform: translateX(8px) rotate(2deg); }
   }
-
+  .fish-icon.worried {
+    animation: swim-worried 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px rgba(255,124,80,0.5));
+  }
+  @keyframes swim-worried {
+    0%,100% { transform: translateX(0) rotate(-5deg); }
+    50%      { transform: translateX(-6px) rotate(5deg); }
+  }
   .fish-icon.happy {
     animation: swim-happy 1.5s ease-in-out infinite;
     filter: drop-shadow(0 0 15px rgba(10,245,176,0.5));
@@ -260,7 +267,7 @@
   @media (max-width: 480px) and (max-height: 700px) {
     .auth-card      { padding: 1.25rem 1.5rem 1rem; }
     .fish-icon      { margin-bottom: 0.5rem; }
-    .fish-icon img  { width: 320px; }
+    .fish-icon img  { width: 90px; }
     .auth-subtitle  { margin-bottom: 0.85rem; font-size: 0.8rem; }
     .auth-tabs      { margin-bottom: 0.85rem; }
     .auth-form      { gap: 0.65rem; }
@@ -498,7 +505,7 @@
 
   function goToReset() {
     document.getElementById('authSubtitle').textContent='Paso 1 de 2 — Verifica quién eres';
-    document.getElementById('fishIcon');
+    document.getElementById('fishIcon').className='fish-icon worried';
     document.getElementById('resetSteps').classList.add('show');
     setStepDots(1); clearBanners('reset1Error','reset1Success');
     document.getElementById('rUsername').value=document.getElementById('fUsername').value;
@@ -534,7 +541,7 @@
       document.getElementById('authSubtitle').textContent='Paso 2 de 2 — Elige tu nueva contraseña';
       setStepDots(2);
       setTimeout(()=>{clearBanners('reset1Success');showPanel('Reset2');},1000);
-    } catch(err){ showErr('reset1Error',errMsg(err)); document.getElementById('fishIcon'); }
+    } catch(err){ showErr('reset1Error',errMsg(err)); document.getElementById('fishIcon').className='fish-icon worried'; }
     finally{ setLoading(false); }
   }
 
