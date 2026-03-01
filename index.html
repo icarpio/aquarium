@@ -276,15 +276,65 @@
 
   .register-only { display: none; }
 
-  @media (max-width: 480px) {
-    .auth-card {
-      padding: 2rem 1.5rem;
+  /* ── MOBILE: fit everything in one screen, no scroll ── */
+  @media (max-width: 540px) {
+    .auth-page {
+      align-items: flex-start;
+      padding: 0;
+      min-height: 100dvh;        /* dynamic viewport — accounts for browser chrome */
     }
-    .auth-title { font-size: 1.2rem; }
-    .auth-subtitle { font-size: 0.88rem; margin-bottom: 1.5rem; }
-    .auth-tab { font-size: 0.58rem; padding: 0.55rem; }
-    .input { font-size: 1rem; } /* prevent iOS zoom */
-    .btn { font-size: 0.68rem; padding: 0.65rem 1.5rem; }
+    .auth-card {
+      min-height: 100dvh;
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      border: none;
+      padding: 1.25rem 1.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: none;
+    }
+
+    /* Shrink the fish emoji */
+    .fish-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+
+    /* Tighten titles */
+    .auth-title    { font-size: 1.15rem; margin-bottom: 0.15rem; }
+    .auth-subtitle { font-size: 0.82rem; margin-bottom: 1rem; line-height: 1.35; }
+
+    /* Tighter tabs */
+    .auth-tabs { margin-bottom: 1rem; }
+    .auth-tab  { font-size: 0.6rem; padding: 0.5rem; }
+
+    /* Tighter form */
+    .auth-form { gap: 0.75rem; }
+
+    /* Smaller inputs — font-size 1rem prevents iOS zoom */
+    .input    { font-size: 1rem; padding: 0.65rem 0.85rem; }
+    label     { font-size: 0.6rem; margin-bottom: 0.25rem; }
+
+    /* Tighter error/success banners */
+    .auth-error, .auth-success { padding: 0.5rem 0.75rem; font-size: 0.82rem; }
+
+    /* Step dots */
+    .reset-steps { margin-bottom: 0.75rem; }
+
+    /* Button */
+    .btn { font-size: 0.68rem; padding: 0.65rem 1rem; }
+
+    /* Divider links */
+    .auth-divider { margin-top: 0.75rem; font-size: 0.8rem; }
+  }
+
+  /* Extra small (iPhone SE, Galaxy A series) */
+  @media (max-width: 380px) {
+    .auth-card  { padding: 1rem 1.25rem 1.25rem; }
+    .fish-icon  { font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .auth-title { font-size: 1rem; }
+    .auth-form  { gap: 0.6rem; }
+    .auth-tabs  { margin-bottom: 0.75rem; }
+    .auth-divider { margin-top: 0.5rem; }
   }
 </style>
 </head>
@@ -459,7 +509,7 @@
   const API_BASE = 'http://localhost:8000';
   const SOURCE   = 'aquarium';
 
-  if (localStorage.getItem('aq_token')) window.location.href = 'draw.html';
+  if (localStorage.getItem('aq_token')) window.location.href = 'aquarium.html';
 
   // ── BUBBLES ─────────────────────────────────────────
   (function() {
@@ -608,7 +658,7 @@
       }
       localStorage.setItem('aq_token', data.token);
       localStorage.setItem('aq_user', JSON.stringify(data.user));
-      setTimeout(() => window.location.href = 'draw.html', 700);
+      setTimeout(() => window.location.href = '.html', 700);
     } catch(err) {
       showErr('authError', errMsg(err));
     } finally {

@@ -12,7 +12,7 @@ function clearAuth() {
   localStorage.removeItem('aq_user');
 }
 function requireAuth() {
-  if (!getToken()) { window.location.href = 'login.html'; return false; }
+  if (!getToken()) { window.location.href = 'index.html'; return false; }
   return true;
 }
 
@@ -68,7 +68,7 @@ function renderNav() {
 
   if (!user) {
     navEl.innerHTML = `
-      <a href="login.html" class="nav-logo">
+      <a href="index.html" class="nav-logo">
         <span class="nav-logo-dot"></span>Aquarium
       </a>`;
     return;
@@ -80,10 +80,10 @@ function renderNav() {
     </a>
     <!-- Desktop links -->
     <div class="nav-links">
-      <a href="draw.html"     class="nav-link" data-page="draw.html">✦ Dibujar</a>
+      <a href="draw.html"     class="nav-link" data-page="draw.html">✦ Crear</a>
       <a href="aquarium.html" class="nav-link" data-page="aquarium.html">◎ Acuario</a>
       <a href="gallery.html"  class="nav-link" data-page="gallery.html">⬡ Galería</a>
-      <span class="nav-link" style="cursor:default;border:none;background:none;color:var(--dim);">
+      <span class="nav-link" style="cursor:default;border:none;background:none;color:#7eb8d4;">
         ${user.username}
       </span>
       <button onclick="logout()" class="nav-link logout">Salir</button>
@@ -102,7 +102,10 @@ function renderNav() {
     document.body.insertBefore(drawer, document.body.firstChild);
   }
   drawer.innerHTML = `
-    <a href="draw.html"     class="nav-link" data-page="draw.html">✦ Dibujar</a>
+    <span style="display:block;padding:0.5rem 1rem 0.4rem;font-size:0.72rem;color:#7eb8d4;font-family:var(--font-mono);border-bottom:1px solid rgba(56,189,248,0.08);margin-bottom:0.25rem;">
+      ${user.username}
+    </span>
+    <a href="draw.html"     class="nav-link" data-page="draw.html">✦ Crear</a>
     <a href="aquarium.html" class="nav-link" data-page="aquarium.html">◎ Acuario</a>
     <a href="gallery.html"  class="nav-link" data-page="gallery.html">⬡ Galería</a>
     <button onclick="logout()" class="nav-link logout">Salir</button>`;

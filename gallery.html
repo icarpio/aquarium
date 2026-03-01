@@ -12,152 +12,252 @@
 
 /* ── HEADER ── */
 .gallery-header {
-  padding:2.5rem 2rem 1.5rem;
-  position:relative; overflow:hidden;
+  padding: 2.5rem 2.5rem 1.75rem;
+  position: relative; overflow: hidden;
 }
 .gallery-header::after {
-  content:''; position:absolute; bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(to right,transparent,rgba(56,189,248,0.15),transparent);
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+  background: linear-gradient(to right, transparent, rgba(56,189,248,0.2), transparent);
 }
-.gh-eyebrow { font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--glow);margin-bottom:0.4rem;opacity:0.7; }
-.gh-title { font-family:var(--font-serif);font-size:clamp(1.5rem,4vw,2.4rem);font-weight:700;color:var(--white);line-height:1.15;margin-bottom:0.4rem; }
-.gh-title em { font-style:italic;color:var(--glow);opacity:0.85; }
-.gh-meta { font-size:0.78rem;color:var(--muted);font-style:italic;font-family:var(--font-serif); }
+.gh-eyebrow {
+  font-size: 0.62rem; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--glow); margin-bottom: 0.5rem; opacity: 0.8;
+}
+.gh-title {
+  font-family: var(--font-serif); font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 700; color: var(--white); line-height: 1.15; margin-bottom: 0.5rem;
+}
+.gh-title em { font-style: italic; color: var(--glow); }
+.gh-meta {
+  font-size: 0.82rem; color: var(--muted); font-style: italic;
+  font-family: var(--font-serif);
+}
 
 /* ── FILTERS ── */
 .gallery-filters {
-  padding:0.75rem 2rem;
-  display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
-  border-bottom:1px solid rgba(56,189,248,0.05);
+  padding: 1rem 2.5rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  border-bottom: 1px solid rgba(56,189,248,0.07);
+  background: rgba(7,17,29,0.4);
+}
+.filters-label {
+  font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-right: 0.25rem;
 }
 .filter-btn {
-  padding:0.3rem 0.8rem; background:rgba(56,189,248,0.04);
-  border:1px solid rgba(56,189,248,0.1); color:var(--muted);
-  font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.08em;
-  border-radius:100px; cursor:pointer; transition:all 0.2s;
+  padding: 0.38rem 1rem;
+  background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.12);
+  color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem;
+  letter-spacing: 0.06em; border-radius: 100px; cursor: pointer; transition: all 0.2s;
 }
-.filter-btn:hover { color:var(--glow); border-color:rgba(56,189,248,0.3); background:rgba(56,189,248,0.08); }
-.filter-btn.active { color:var(--glow); background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.35); }
+.filter-btn:hover  { color: var(--glow); border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.08); }
+.filter-btn.active { color: var(--glow); background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.4); font-weight: 500; }
 
-.search-wrap { margin-left:auto; position:relative; }
-.search-icon { position:absolute;left:0.65rem;top:50%;transform:translateY(-50%);color:var(--dim);font-size:0.75rem;pointer-events:none; }
+.search-wrap { margin-left: auto; position: relative; }
+.search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--dim); font-size: 0.8rem; pointer-events: none; }
 .search-input {
-  background:rgba(7,17,29,0.8); border:1px solid rgba(56,189,248,0.1);
-  color:var(--white); font-family:var(--font-mono); font-size:0.75rem;
-  padding:0.35rem 0.85rem 0.35rem 2rem; border-radius:100px;
-  outline:none; width:170px; transition:all 0.25s;
+  background: rgba(7,17,29,0.9); border: 1px solid rgba(56,189,248,0.12);
+  color: var(--white); font-family: var(--font-mono); font-size: 0.8rem;
+  padding: 0.42rem 1rem 0.42rem 2.2rem; border-radius: 100px;
+  outline: none; width: 180px; transition: all 0.25s;
 }
-.search-input:focus { border-color:rgba(56,189,248,0.35); width:200px; }
-.search-input::placeholder { color:var(--dim); }
+.search-input:focus { border-color: rgba(56,189,248,0.4); width: 220px; box-shadow: 0 0 0 3px rgba(56,189,248,0.06); }
+.search-input::placeholder { color: var(--dim); }
 
 /* ── GRID ── */
 .gallery-grid {
-  padding:1.5rem 2rem;
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
-  gap:1.1rem;
+  padding: 1.75rem 2.5rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
 }
 
 /* ── CARD ── */
 .fish-card {
-  background:rgba(10,25,41,0.7); border:1px solid rgba(56,189,248,0.08);
-  border-radius:4px; overflow:hidden;
-  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-  animation:card-appear 0.5s ease backwards;
-  position:relative; backdrop-filter:blur(8px);
+  background: rgba(8,20,38,0.9);
+  border: 1px solid rgba(56,189,248,0.1);
+  border-radius: 6px; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  animation: card-appear 0.45s ease backwards;
+  position: relative;
+  display: flex; flex-direction: column;
 }
-@keyframes card-appear { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:none;} }
-.fish-card:hover { border-color:rgba(56,189,248,0.25); transform:translateY(-4px); box-shadow:0 10px 35px rgba(0,0,0,0.4),0 0 25px rgba(56,189,248,0.05); }
-.fish-card.mine::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--glow),var(--teal));opacity:0.6; }
+@keyframes card-appear { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
 
-.card-img-wrap { position:relative;aspect-ratio:4/3;background:rgba(4,15,30,0.9);overflow:hidden; }
-.card-img { width:100%;height:100%;object-fit:contain;padding:0.65rem;display:block;transition:transform 0.4s ease; }
-.fish-card:hover .card-img { transform:scale(1.05); }
-.card-img-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(7,17,29,0.5),transparent 50%);pointer-events:none; }
-.card-color-line { height:2px;background:var(--fish-color,var(--glow));opacity:0.4; }
-
-.card-body { padding:0.8rem 0.9rem 0.6rem; }
-.card-name { font-family:var(--font-serif);font-size:0.95rem;font-weight:700;color:var(--white);line-height:1.2;margin-bottom:0.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.card-author { font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:0.35rem; }
-.card-author-dot { width:5px;height:5px;border-radius:50%;background:var(--fish-color,var(--glow));flex-shrink:0; }
-.card-date { font-size:0.6rem;color:rgba(77,127,160,0.5);margin-top:0.4rem; }
-
-.card-footer { padding:0.5rem 0.9rem;border-top:1px solid rgba(56,189,248,0.05);display:flex;align-items:center;min-height:40px; }
-.own-badge { font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(56,189,248,0.4);margin-right:auto; }
-.delete-btn {
-  background:none; border:1px solid rgba(244,63,94,0.15); color:rgba(244,63,94,0.45);
-  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase;
-  padding:0.28rem 0.7rem; border-radius:2px; cursor:pointer; transition:all 0.2s;
+.fish-card:hover {
+  border-color: rgba(56,189,248,0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 30px rgba(56,189,248,0.07);
 }
-.delete-btn:hover { color:var(--danger); border-color:rgba(244,63,94,0.5); background:rgba(244,63,94,0.06); }
+/* Accent top line for own fish */
+.fish-card.mine::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(to right, var(--glow), var(--teal)); opacity:0.7;
+  z-index: 2;
+}
 
+/* Image */
+.card-img-wrap {
+  position: relative; aspect-ratio: 4/3;
+  background:
+    repeating-conic-gradient(rgba(56,189,248,0.04) 0% 25%, rgba(4,15,30,0.9) 0% 50%)
+    0 0 / 18px 18px;
+  overflow: hidden; flex-shrink: 0;
+}
+.card-img {
+  width:100%; height:100%; object-fit:contain;
+  padding: 0.75rem; display:block;
+  transition: transform 0.4s ease;
+}
+.fish-card:hover .card-img { transform: scale(1.06); }
+
+/* Gradient overlay on image bottom */
+.card-img-overlay {
+  position:absolute; bottom:0; left:0; right:0; height:50%;
+  background: linear-gradient(to top, rgba(6,16,32,0.85), transparent);
+  pointer-events:none;
+}
+.card-color-bar { height: 3px; background: var(--fish-color, var(--glow)); opacity: 0.55; flex-shrink: 0; }
+
+/* Body */
+.card-body {
+  padding: 0.85rem 1rem 0.6rem;
+  flex: 1; display: flex; flex-direction: column; gap: 0.3rem;
+  background: rgba(6,16,32,0.98);
+}
+.card-name {
+  font-family: var(--font-serif); font-size: 1.05rem; font-weight: 700;
+  color: #ffffff; line-height: 1.25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-author {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; color: #9ecfea; font-family: var(--font-mono);
+}
+.card-author-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fish-color, var(--glow)); flex-shrink: 0;
+}
+.card-date {
+  font-size: 0.65rem; color: #5a8faa; margin-top: 0.1rem;
+  font-family: var(--font-mono);
+}
+
+/* Footer */
+.card-footer {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid rgba(56,189,248,0.08);
+  display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;
+  min-height: 46px;
+  background: rgba(4,12,24,0.95);
+}
 
 /* ── LIKE BUTTON ── */
 .like-btn {
-  display: flex; align-items: center; gap: 0.35rem;
-  background: none; border: 1px solid rgba(251,113,133,0.15);
-  color: rgba(251,113,133,0.45); border-radius: 100px;
-  padding: 0.25rem 0.7rem; cursor: pointer;
-  font-family: var(--font-mono); font-size: 0.65rem;
-  transition: all 0.25s; margin-left: auto;
+  display: flex; align-items: center; gap: 0.4rem;
+  background: none; border: none;
+  color: #c0547a; border-radius: 100px;
+  padding: 0.3rem 0.5rem; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  transition: all 0.2s; flex-shrink: 0;
 }
-.like-btn:hover {
-  color: #fb7185; border-color: rgba(251,113,133,0.5);
-  background: rgba(251,113,133,0.07);
-  transform: scale(1.05);
-}
-.like-btn.liked {
-  color: #fb7185; border-color: rgba(251,113,133,0.45);
-  background: rgba(251,113,133,0.1);
-}
+.like-btn:hover { color: #ff6b8a; transform: scale(1.1); }
+.like-btn.liked { color: #ff4d77; }
 .like-btn.liked .heart { animation: heartPop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes heartPop {
   0%   { transform: scale(1); }
-  50%  { transform: scale(1.4); }
+  50%  { transform: scale(1.6); }
   100% { transform: scale(1); }
 }
-.like-btn .heart { font-size: 0.9rem; line-height: 1; }
-.like-btn .like-count { font-size: 0.65rem; min-width: 10px; }
-.like-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.like-btn .heart      { font-size: 1.2rem; line-height: 1; display: block; }
+.like-btn .like-count { font-size: 0.72rem; color: #9ecfea; min-width: 14px; }
+.like-btn:disabled    { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+
+/* ── DELETE BUTTON ── */
+.delete-btn {
+  background: none; border: none;
+  color: #b03050; font-size: 1.1rem; line-height: 1;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  padding: 0;
+}
+.delete-btn:hover { color: #ff3355; background: rgba(244,63,94,0.15); transform: scale(1.15); }
 
 /* ── SKELETON ── */
-.skeleton { background:linear-gradient(90deg,rgba(56,189,248,0.03) 0%,rgba(56,189,248,0.08) 50%,rgba(56,189,248,0.03) 100%);background-size:200% 100%;animation:shimmer 1.5s ease infinite;border-radius:var(--radius); }
+.skeleton {
+  background: linear-gradient(90deg, rgba(56,189,248,0.03) 0%, rgba(56,189,248,0.09) 50%, rgba(56,189,248,0.03) 100%);
+  background-size: 200% 100%; animation: shimmer 1.6s ease infinite; border-radius: 3px;
+}
 @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
-.skeleton-card { border:1px solid rgba(56,189,248,0.06);border-radius:4px;overflow:hidden; }
-.skeleton-img  { height:130px; }
-.skeleton-body { padding:0.8rem 0.9rem;display:flex;flex-direction:column;gap:0.45rem; }
-.skeleton-line { height:11px;border-radius:2px; }
+.skeleton-card { border: 1px solid rgba(56,189,248,0.07); border-radius: 6px; overflow: hidden; background: rgba(8,20,38,0.7); }
+.skeleton-img  { aspect-ratio: 4/3; }
+.skeleton-body { padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.skeleton-foot { padding: 0.55rem 1rem; border-top: 1px solid rgba(56,189,248,0.06); }
+.skeleton-line { height: 12px; border-radius: 3px; }
 
 /* ── EMPTY ── */
-.gallery-empty { grid-column:1/-1;text-align:center;padding:4rem 2rem; }
-.gallery-empty-icon { font-size:3rem;opacity:0.2;margin-bottom:1rem; }
-.gallery-empty-text { font-family:var(--font-serif);font-style:italic;font-size:1rem;color:var(--muted);margin-bottom:1.25rem; }
+.gallery-empty { grid-column: 1/-1; text-align: center; padding: 5rem 2rem; }
+.gallery-empty-icon { font-size: 3.5rem; opacity: 0.2; margin-bottom: 1rem; }
+.gallery-empty-text { font-family: var(--font-serif); font-style: italic; font-size: 1.05rem; color: var(--muted); margin-bottom: 1.5rem; }
 
 /* ── PAGINATION ── */
-.pagination { display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.75rem 2rem 2.5rem;flex-wrap:wrap; }
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.4rem; padding: 1.25rem 2rem 3rem; flex-wrap: wrap;
+}
 .page-btn {
-  min-width:34px;height:34px;padding:0 0.4rem;
-  background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.1);
-  color:var(--muted);font-family:var(--font-mono);font-size:0.7rem;border-radius:var(--radius);
-  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+  min-width: 38px; height: 38px; padding: 0 0.5rem;
+  background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.12);
+  color: var(--muted); font-family: var(--font-mono); font-size: 0.72rem;
+  border-radius: 4px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
 }
-.page-btn:hover { color:var(--glow);border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.08); }
-.page-btn.active { color:var(--glow);background:rgba(56,189,248,0.12);border-color:var(--glow); }
-.page-btn:disabled { opacity:0.3;cursor:not-allowed;pointer-events:none; }
+.page-btn:hover  { color: var(--glow); border-color: rgba(56,189,248,0.35); background: rgba(56,189,248,0.09); }
+.page-btn.active { color: var(--glow); background: rgba(56,189,248,0.14); border-color: var(--glow); font-weight: 500; }
+.page-btn:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
 
-/* ── RESPONSIVE ── */
-@media (max-width:768px) {
-  .gallery-header { padding:1.5rem 1rem 1rem; }
-  .gallery-filters { padding:0.6rem 1rem; }
-  .search-wrap { width:100%; margin-left:0; margin-top:0.25rem; }
-  .search-input { width:100% !important; }
-  .gallery-grid { padding:1rem; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0.75rem; }
-  .card-body { padding:0.6rem 0.7rem 0.5rem; }
-  .card-name { font-size:0.85rem; }
-  .card-footer { padding:0.4rem 0.7rem; }
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+
+/* Tablet */
+@media (max-width: 900px) {
+  .gallery-header  { padding: 2rem 1.5rem 1.5rem; }
+  .gallery-filters { padding: 0.85rem 1.5rem; }
+  .gallery-grid    { padding: 1.25rem 1.5rem 1rem; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 1rem; }
 }
-@media (max-width:400px) {
-  .gallery-grid { grid-template-columns:1fr 1fr; gap:0.6rem; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .gallery-header  { padding: 1.5rem 1rem 1.25rem; }
+  .gallery-filters { padding: 0.75rem 1rem; gap: 0.4rem; }
+  .filters-label   { display: none; }
+
+  /* Search takes full width on its own row */
+  .search-wrap  { width: 100%; order: 10; margin-top: 0.25rem; }
+  .search-input { width: 100% !important; border-radius: 8px; font-size: 1rem; padding: 0.55rem 1rem 0.55rem 2.2rem; }
+
+  /* 2-column grid on mobile */
+  .gallery-grid { padding: 1rem; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+
+  /* Slightly smaller card text on 2-col */
+  .card-name    { font-size: 0.92rem; }
+  .card-author  { font-size: 0.72rem; }
+  .card-date    { font-size: 0.62rem; }
+  .card-body    { padding: 0.75rem 0.8rem 0.5rem; gap: 0.25rem; }
+  .card-footer  { padding: 0.45rem 0.8rem; min-height: 40px; gap: 0.35rem; }
+
+  .like-btn .heart { font-size: 1.1rem; }
+  .delete-btn   { font-size: 1rem; width: 30px; height: 30px; }
+}
+
+/* Very small screens — still 2 cols but tighter */
+@media (max-width: 380px) {
+  .gallery-grid { gap: 0.6rem; padding: 0.75rem; }
+  .card-name    { font-size: 0.85rem; }
+  .card-body    { padding: 0.65rem 0.7rem 0.45rem; }
+  .card-footer  { padding: 0.4rem 0.7rem; }
 }
 </style>
 </head>
@@ -167,6 +267,7 @@
 <nav class="nav" id="nav"></nav>
 
 <div class="gallery-page">
+
   <div class="gallery-header">
     <div class="gh-eyebrow">Colección completa</div>
     <h1 class="gh-title">La <em>galería</em> del océano</h1>
@@ -174,158 +275,209 @@
   </div>
 
   <div class="gallery-filters">
-    <span style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);">Mostrar:</span>
+    <span class="filters-label">Mostrar</span>
     <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
     <button class="filter-btn" id="filterMine" onclick="setFilter('mine',this)">Mis peces</button>
     <div class="search-wrap">
       <span class="search-icon">⌕</span>
-      <input class="search-input" type="text" id="searchInput" placeholder="Buscar por nombre…" oninput="onSearch(this.value)">
+      <input class="search-input" type="text" id="searchInput"
+        placeholder="Buscar por nombre o autor…" oninput="onSearch(this.value)">
     </div>
   </div>
 
   <div class="gallery-grid" id="galleryGrid"></div>
-  <div class="pagination" id="pagination"></div>
+  <div class="pagination"   id="pagination"></div>
+
 </div>
 
 <script src="shared.js"></script>
 <script>
 renderNav();
-if(!getToken()) document.getElementById('filterMine').style.display='none';
+if (!getToken()) document.getElementById('filterMine').style.display = 'none';
 
-const LIMIT=20;
-let currentPage=1, currentFilter='all', searchQuery='', searchTimer;
+const LIMIT = 20;
+let currentPage = 1, currentFilter = 'all', searchQuery = '', searchTimer;
 
-function setFilter(f,btn) {
-  currentFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  currentPage=1; loadGallery();
+  currentPage = 1;
+  loadGallery();
 }
 function onSearch(q) {
   clearTimeout(searchTimer);
-  searchTimer=setTimeout(()=>{ searchQuery=q.toLowerCase().trim(); currentPage=1; loadGallery(); },300);
+  searchTimer = setTimeout(() => { searchQuery = q.toLowerCase().trim(); currentPage = 1; loadGallery(); }, 300);
 }
 
 async function loadGallery() {
   renderSkeletons();
   setLoading(true);
   try {
-    const data=await api(`/api/aquarium/gallery/?source=${SOURCE}&page=${currentPage}&limit=${LIMIT}`,'GET',null,false);
-    let results=data.results;
-    const user=getUser();
-    if(currentFilter==='mine'&&user) results=results.filter(f=>f.user===user.id);
-    if(searchQuery) results=results.filter(f=>(f.name||'').toLowerCase().includes(searchQuery)||f.username.toLowerCase().includes(searchQuery));
-    renderCards(results,data.total,data.page,data.limit);
-  } catch(e){toast(apiErrorMsg(e),'error');document.getElementById('galleryGrid').innerHTML='';}
-  finally{setLoading(false);}
+    const data = await api(`/api/aquarium/gallery/?source=${SOURCE}&page=${currentPage}&limit=${LIMIT}`, 'GET', null, false);
+    let results = data.results;
+    const user  = getUser();
+    if (currentFilter === 'mine' && user) results = results.filter(f => f.user === user.id);
+    if (searchQuery) results = results.filter(f =>
+      (f.name || '').toLowerCase().includes(searchQuery) ||
+      f.username.toLowerCase().includes(searchQuery)
+    );
+    renderCards(results, data.total, data.page, data.limit);
+  } catch(e) {
+    toast(apiErrorMsg(e), 'error');
+    document.getElementById('galleryGrid').innerHTML = '';
+  } finally {
+    setLoading(false);
+  }
 }
 
 function renderSkeletons() {
-  document.getElementById('galleryGrid').innerHTML=Array(8).fill('').map(()=>`
+  document.getElementById('galleryGrid').innerHTML = Array(8).fill('').map(() => `
     <div class="skeleton-card">
       <div class="skeleton skeleton-img"></div>
       <div class="skeleton-body">
-        <div class="skeleton skeleton-line" style="width:70%"></div>
-        <div class="skeleton skeleton-line" style="width:45%"></div>
+        <div class="skeleton skeleton-line" style="width:68%"></div>
+        <div class="skeleton skeleton-line" style="width:42%"></div>
+        <div class="skeleton skeleton-line" style="width:30%"></div>
+      </div>
+      <div class="skeleton-foot">
+        <div class="skeleton skeleton-line" style="width:50%;height:10px;"></div>
       </div>
     </div>`).join('');
 }
 
-function renderCards(fishes,total,page,limit) {
-  const grid=document.getElementById('galleryGrid');
-  const user=getUser();
-  document.getElementById('ghMeta').textContent=total===0?'Ningún pez encontrado':total===1?'1 pez en la colección':`${total} peces en la colección`;
-  if(fishes.length===0){
-    grid.innerHTML=`<div class="gallery-empty"><div class="gallery-empty-icon">🐠</div><p class="gallery-empty-text">No hay peces aquí todavía</p><a href="draw.html" class="btn btn-primary">Dibujar el primero →</a></div>`;
-    document.getElementById('pagination').innerHTML=''; return;
+function renderCards(fishes, total, page, limit) {
+  const grid = document.getElementById('galleryGrid');
+  const user = getUser();
+
+  document.getElementById('ghMeta').textContent =
+    total === 0 ? 'Ningún pez encontrado' :
+    total === 1 ? '1 pez en la colección' :
+    `${total} peces en la colección`;
+
+  if (fishes.length === 0) {
+    grid.innerHTML = `
+      <div class="gallery-empty">
+        <div class="gallery-empty-icon">🐠</div>
+        <p class="gallery-empty-text">No hay peces aquí todavía</p>
+        <a href="draw.html" class="btn btn-primary">Dibujar el primero →</a>
+      </div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
   }
-  grid.innerHTML='';
-  fishes.forEach((fish,idx)=>{
-    const isOwn=user&&fish.user===user.id;
-    const date=new Date(fish.created_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-    const fc=fish.color||'#38bdf8';
-    const card=document.createElement('div');
-    card.className='fish-card'+(isOwn?' mine':'');
-    card.style.setProperty('--fish-color',fc);
-    card.style.animationDelay=`${idx*0.04}s`;
-    card.innerHTML=`
+
+  grid.innerHTML = '';
+  fishes.forEach((fish, idx) => {
+    const isOwn = user && fish.user === user.id;
+    const fc    = fish.color || '#38bdf8';
+    const date  = new Date(fish.created_at).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+    const liked = fish.liked || false;
+    const likes = fish.likes_count || 0;
+
+    const card = document.createElement('div');
+    card.className = 'fish-card' + (isOwn ? ' mine' : '');
+    card.style.setProperty('--fish-color', fc);
+    card.style.animationDelay = `${idx * 0.04}s`;
+
+    card.innerHTML = `
       <div class="card-img-wrap">
-        <img class="card-img" src="${fish.image_url}" alt="${fish.name||'pez'}" loading="lazy">
+        <img class="card-img" src="${fish.image_url}" alt="${fish.name || 'pez'}" loading="lazy">
         <div class="card-img-overlay"></div>
       </div>
-      <div class="card-color-line" style="background:${fc};"></div>
+      <div class="card-color-bar"></div>
       <div class="card-body">
-        <div class="card-name">${fish.name||'Pez sin nombre'}</div>
-        <div class="card-author"><div class="card-author-dot"></div><span>${fish.username}</span></div>
+        <div class="card-name">${fish.name || 'Pez sin nombre'}</div>
+        <div class="card-author">
+          <div class="card-author-dot" style="background:${fc};"></div>
+          <span>${fish.username}</span>
+        </div>
         <div class="card-date">${date}</div>
       </div>
       <div class="card-footer">
-        ${isOwn?'<span class="own-badge">Mi pez</span>':''}
         <button
-          class="like-btn ${fish.liked ? 'liked' : ''}"
+          class="like-btn ${liked ? 'liked' : ''}"
           id="like-${fish.id}"
           onclick="toggleLike(${fish.id}, this)"
           ${!user ? 'disabled title="Inicia sesión para dar like"' : ''}>
-          <span class="heart">${fish.liked ? '♥' : '♡'}</span>
-          <span class="like-count">${fish.likes_count || 0}</span>
+          <span class="heart">${(liked || likes > 0) ? '♥' : '♡'}</span>
+          <span class="like-count">${likes}</span>
         </button>
-        ${isOwn?`<button class="delete-btn" style="margin-left:0.5rem;" onclick="deleteFish(${fish.id},this)">Eliminar</button>`:''}
+        ${isOwn ? `<button class="delete-btn" onclick="deleteFish(${fish.id},this)" title="Eliminar pez">✕</button>` : ''}
       </div>`;
+
     grid.appendChild(card);
   });
-  renderPagination(total,page,limit);
+
+  renderPagination(total, page, limit);
 }
 
-function renderPagination(total,page,limit) {
-  const c=document.getElementById('pagination');
-  const tp=Math.ceil(total/limit);
-  if(tp<=1){c.innerHTML='';return;}
-  let html=`<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>←</button>`;
-  for(let i=1;i<=tp;i++){
-    if(i===1||i===tp||(i>=page-2&&i<=page+2)) html+=`<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    else if(i===page-3||i===page+3) html+=`<span style="color:var(--dim);font-size:0.7rem;padding:0 3px;">…</span>`;
+function renderPagination(total, page, limit) {
+  const c  = document.getElementById('pagination');
+  const tp = Math.ceil(total / limit);
+  if (tp <= 1) { c.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>←</button>`;
+  for (let i = 1; i <= tp; i++) {
+    if (i === 1 || i === tp || (i >= page-2 && i <= page+2)) {
+      html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if (i === page-3 || i === page+3) {
+      html += `<span style="color:var(--dim);font-size:0.75rem;padding:0 4px;align-self:center;">…</span>`;
+    }
   }
-  html+=`<button class="page-btn" onclick="goPage(${page+1})" ${page===tp?'disabled':''}>→</button>`;
-  c.innerHTML=html;
+  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===tp?'disabled':''}>→</button>`;
+  c.innerHTML = html;
 }
-function goPage(p){if(p<1)return;currentPage=p;window.scrollTo({top:0,behavior:'smooth'});loadGallery();}
 
-async function deleteFish(fishId,btn) {
-  if(!confirm('¿Eliminar este pez? Se borrará también de Cloudinary.')) return;
-  const card=btn.closest('.fish-card');
-  card.style.opacity='0.4'; card.style.pointerEvents='none';
+function goPage(p) {
+  if (p < 1) return;
+  currentPage = p;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  loadGallery();
+}
+
+async function deleteFish(fishId, btn) {
+  if (!confirm('¿Eliminar este pez? Se borrará también de Cloudinary.')) return;
+  const card = btn.closest('.fish-card');
+  card.style.opacity = '0.35';
+  card.style.pointerEvents = 'none';
   setLoading(true);
   try {
-    await api(`/api/aquarium/fishes/${fishId}/delete/`,'DELETE');
-    toast('Pez eliminado','success'); loadGallery();
-  } catch(e){toast(apiErrorMsg(e),'error');card.style.opacity='1';card.style.pointerEvents='auto';}
-  finally{setLoading(false);}
+    await api(`/api/aquarium/fishes/${fishId}/delete/`, 'DELETE');
+    toast('Pez eliminado', 'success');
+    loadGallery();
+  } catch(e) {
+    toast(apiErrorMsg(e), 'error');
+    card.style.opacity = '1';
+    card.style.pointerEvents = 'auto';
+  } finally {
+    setLoading(false);
+  }
 }
 
 async function toggleLike(fishId, btn) {
   if (!getToken()) { toast('Inicia sesión para dar like', 'error'); return; }
 
-  // Optimistic UI update
   const heart     = btn.querySelector('.heart');
   const countEl   = btn.querySelector('.like-count');
   const isLiked   = btn.classList.contains('liked');
   const prevCount = parseInt(countEl.textContent) || 0;
 
+  // Optimistic update
   btn.disabled = true;
   btn.classList.toggle('liked', !isLiked);
-  heart.textContent   = isLiked ? '♡' : '♥';
-  countEl.textContent = isLiked ? prevCount - 1 : prevCount + 1;
+  const newCount = isLiked ? prevCount - 1 : prevCount + 1;
+  heart.textContent   = (!isLiked || newCount > 0) ? '♥' : '♡';
+  countEl.textContent = newCount;
 
   try {
     const data = await api(`/api/aquarium/fishes/${fishId}/like/`, 'POST');
-    // Sync with real server count
     countEl.textContent = data.likes_count;
     btn.classList.toggle('liked', data.liked);
-    heart.textContent = data.liked ? '♥' : '♡';
+    heart.textContent = (data.liked || data.likes_count > 0) ? '♥' : '♡';
   } catch(e) {
-    // Revert on error
+    // Revert
     btn.classList.toggle('liked', isLiked);
-    heart.textContent   = isLiked ? '♥' : '♡';
+    heart.textContent   = (isLiked || prevCount > 0) ? '♥' : '♡';
     countEl.textContent = prevCount;
     toast(apiErrorMsg(e), 'error');
   } finally {
