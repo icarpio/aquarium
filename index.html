@@ -397,7 +397,7 @@
   const API_BASE = 'https://marianoapi.onrender.com';
   const SOURCE   = 'aquarium';
 
-  if (localStorage.getItem('aq_token')) window.location.href = 'draw.html';
+  if (localStorage.getItem('aq_token')) window.location.href = 'aquarium.html';
 
   // Bubbles
   (function() {
@@ -498,7 +498,7 @@
       }
       localStorage.setItem('aq_token',data.token);
       localStorage.setItem('aq_user',JSON.stringify(data.user));
-      setTimeout(()=>window.location.href='draw.html',700);
+      setTimeout(()=>window.location.href='aquarium.html',700);
     } catch(err){ showErr('authError',errMsg(err)); }
     finally{ setLoading(false); }
   }
